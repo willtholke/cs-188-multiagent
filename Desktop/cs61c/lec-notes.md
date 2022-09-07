@@ -1,7 +1,5 @@
 Analog data is data that's represented n a physical way
 
-
-
 ### Test
 
 Bits can represent anything!
@@ -21,7 +19,5 @@ A **numeral** is a symbol or name that stands for a number: 4, four, quatro, IV,
 
 Number is the "idea" in our minds... there is only ONE of these; for example, the concept of "4"
 
-### Base 10 (Ten) Digits, Decimals
+### Pointer Arithmetic
 
-
-### Coverting Binary <-> Hexadecimal†

@@ -165,10 +165,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
             v = min(v, self.minValue(successor))
         return v
         
-    def minValue(self, gameState: GameState, numGhosts: int):
+    def minValue(self, gameState: GameState, numGhosts: int, agentIndex: int):
         v = float('inf')
         # TODO: run through this numGhosts times (all agents make a move after one PacMan move)
-        for successor in gameState.generateSuccessor(): #FIXME
+        for successor in gameState.generateSuccessor(MultiAgentSearchAgent.getAction(), agentIndex): #FIXME
             v = max(v, self.maxValue(successor))
         return v
     

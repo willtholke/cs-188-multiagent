@@ -75,10 +75,20 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        food = newFood.asList()  #Do I use current game state food?
+        food = newFood.asList()
+        foodDist = [manhattanDistance(successorGameState.getPacmanPosition(), x) for x in newFood.asList()]
+        ghostDist = [manhattanDistance(successorGameState.getPacmanPosition(), x.configuration.pos) for x in newGhostStates]
+        closestGhost = min(ghostDist)
+    
         if not food:
             return 100000
+        if closestGhost == 0 or action == Directions.STOP:
+            return -1000000
+          
+        foodWeight = int((1/min(foodDist)) * 20)
+        ghostWeight = int((1/ closestGhost) * 5)
+        return successorGameState.getScore() + foodWeight - ghostWeight
+      
         # food_count = 0 
         #Penalize if closer ghost 1/min(ghost)
         #Find current score - Ghost Position + 1/ Closest Food 
@@ -91,9 +101,7 @@ class ReflexAgent(Agent):
         # food_count += len(food)
         # food_count = (1 / food_count) * 1000
         # food_count = int(food_count)
-        foodDist = [manhattanDistance(successorGameState.getPacmanPosition(), x) for x in newFood.asList()]
-        
-
+      
         # for x in newGhostStates:
         # ghostDist.append(manhattanDistance(successorGameState.getPacmanPosition, x))
 
@@ -106,8 +114,6 @@ class ReflexAgent(Agent):
         #Count distance from ghost maybe prioritize distance from ghost
         #If ghost is scared there might be enough time for Pacman to catch up and he could eat it
 
-
-
         #Make a variable where food is by doing CurrentGameState.getFood() if u have asList use for loop to loop over food
         #Then use manhattan distance to know food location call function legalaction for every action pacman will get a new position
         #caculate manhattan distance from new position to food poistion
@@ -117,14 +123,7 @@ class ReflexAgent(Agent):
         # lst = successorGameState.getGhostPosition() - also use getScore distance to nearest food and distance to 0 index ghost create 
         # for x in lst: shortest distance to food 
         # var = manhattanDistance(successorGameState.getPacmanPosition(), newGhostStates[0].configuration.pos)
-        ghostDist = [manhattanDistance(successorGameState.getPacmanPosition(), x.configuration.pos) for x in newGhostStates]
-        var = min(ghostDist)
-        if var == 0:
-            return -1000000
-        if action == Directions.STOP:
-            return -1000000
-
-        return (successorGameState.getScore() + int((1/min(foodDist)) * 20)) - int((1/ var) * 5)
+        
 def scoreEvaluationFunction(currentGameState: GameState):
     """
     This default evaluation function just returns the score of the state.
@@ -159,7 +158,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
-
+    
+    def maxValue(self, gameState: GameState):
+        v = -float('inf')
+        for successor in gameState.generateSuccessor(): # FIXME
+            v = min(v, self.minValue(successor))
+        return v
+        
+    def minValue(self, gameState: GameState, numGhosts: int):
+        v = float('inf')
+        # TODO: run through this numGhosts times (all agents make a move after one PacMan move)
+        for successor in gameState.generateSuccessor(): #FIXME
+            v = max(v, self.maxValue(successor))
+        return v
+    
+    def getActionWithIndex(self, gameState: GameState, agentIndex: int):
+        """ 
+        Helper function for getAction that initializes agentIndex as 0.
+        """
+        if self.depth == 0:
+          print(self.evaluationFunction(gameState))
+        if agentIndex == 0: # if the agentIndex is 0, its the maximizing PacMan
+          return self.maxValue(gameState)
+        else: # otherwise, it's a minimizing ghost (there could be many)
+          return self.minValue(gameState, gameState.getNumAgents() - 1)
+        
     def getAction(self, gameState: GameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -183,8 +206,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.getActionWithIndex(gameState, 0)
+        
+  
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -196,6 +220,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        
+        
+        
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):

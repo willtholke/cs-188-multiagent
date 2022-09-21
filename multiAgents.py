@@ -12,6 +12,7 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -75,8 +76,55 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        food = newFood.asList()  #Do I use current game state food?
+        if not food:
+            return 100000
+        # food_count = 0 
+        #Penalize if closer ghost 1/min(ghost)
+        #Find current score - Ghost Position + 1/ Closest Food 
+        # for x in food:
+        #     print(food)
+        #Find closest food
+        #Distance to ghost to successor state is not zero 
+        #If it is zero 
+        #If action is stop 
+        # food_count += len(food)
+        # food_count = (1 / food_count) * 1000
+        # food_count = int(food_count)
+        foodDist = [manhattanDistance(successorGameState.getPacmanPosition(), x) for x in newFood.asList()]
+        
 
+        # for x in newGhostStates:
+        # ghostDist.append(manhattanDistance(successorGameState.getPacmanPosition, x))
+
+    
+        #Method will be called on a state and action 
+        #Variables based off new state to generate a number that represents value
+        #How far is pacman from food
+        #How much food is left less (design given a number of food than generate off that)
+        #1/food * weight or -food * weight
+        #Count distance from ghost maybe prioritize distance from ghost
+        #If ghost is scared there might be enough time for Pacman to catch up and he could eat it
+
+
+
+        #Make a variable where food is by doing CurrentGameState.getFood() if u have asList use for loop to loop over food
+        #Then use manhattan distance to know food location call function legalaction for every action pacman will get a new position
+        #caculate manhattan distance from new position to food poistion
+        #Also keep track of ghosts check the successors negative infinity if in same boat with ghost neg float 
+
+
+        # lst = successorGameState.getGhostPosition() - also use getScore distance to nearest food and distance to 0 index ghost create 
+        # for x in lst: shortest distance to food 
+        # var = manhattanDistance(successorGameState.getPacmanPosition(), newGhostStates[0].configuration.pos)
+        ghostDist = [manhattanDistance(successorGameState.getPacmanPosition(), x.configuration.pos) for x in newGhostStates]
+        var = min(ghostDist)
+        if var == 0:
+            return -1000000
+        if action == Directions.STOP:
+            return -1000000
+
+        return (successorGameState.getScore() + int((1/min(foodDist)) * 20)) - int((1/ var) * 5)
 def scoreEvaluationFunction(currentGameState: GameState):
     """
     This default evaluation function just returns the score of the state.

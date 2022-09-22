@@ -222,16 +222,54 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
     """
-
+    
+    def maxValue(self, gameState: GameState, agentIndex: int, currentDepth: int, alpha: int, beta: int):
+        v, act = -float('inf'), None
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            minimax = self.getActionWithIndex(successor, agentIndex + 1, currentDepth, alpha, beta)
+            if minimax[0] > v:
+                v, act = minimax[0], action
+            if v > beta:
+              return (v, action)
+            alpha = max(alpha, v)
+        return (v, act)
+        
+    def minValue(self, gameState: GameState, agentIndex: int, currentDepth: int, alpha: int, beta: int):
+        v, act = float('inf'), None
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            minimax = self.getActionWithIndex(successor, agentIndex + 1, currentDepth, alpha, beta)
+            if minimax[0] < v:
+                v, act = minimax[0], action
+            if v < alpha:
+              return (v, action)
+            beta = min(beta, v)
+        return (v, act)
+    
+    def getActionWithIndex(self, gameState: GameState, agentIndex: int, currentDepth: int, alpha: int, beta: int):
+        """ 
+        Helper function for getAction that initializes agentIndex as 0.
+        """
+        if agentIndex == gameState.getNumAgents(): # one pass completed
+            agentIndex = 0 # reset to pacman (maximizer)
+            currentDepth += 1
+        if currentDepth == self.depth or gameState.isLose() or gameState.isWin(): # base case
+            return (self.evaluationFunction(gameState), None) # return the move here
+        if agentIndex == 0: # if the agentIndex is 0, it's the maximizing pacman
+            return self.maxValue(gameState, agentIndex, currentDepth, alpha, beta)
+        else: # otherwise, it's a minimizing ghost (there could be many)
+            return self.minValue(gameState, agentIndex, currentDepth, alpha, beta)
+        
     def getAction(self, gameState: GameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        
-        
-        
-        util.raiseNotDefined()
+        return self.getActionWithIndex(gameState, 
+                                       agentIndex=0, 
+                                       currentDepth=0,
+                                       alpha=-float('inf'),
+                                       beta=float('inf'))[1]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """

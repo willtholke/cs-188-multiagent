@@ -275,7 +275,39 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
-
+        
+    def maxValue(self, gameState: GameState, agentIndex: int, currentDepth: int):
+        v, act = -float('inf'), None
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            minimax = self.getActionWithIndex(successor, agentIndex + 1, currentDepth)
+            if minimax[0] > v:
+                v, act = minimax[0], action
+        return (v, act)
+        
+    def expValue(self, gameState: GameState, agentIndex: int, currentDepth: int):
+        v, act = 0, None
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            expectimax = self.getActionWithIndex(successor, agentIndex + 1, currentDepth)
+            v += expectimax[0]
+            act = action
+        return (v, act)
+    
+    def getActionWithIndex(self, gameState: GameState, agentIndex: int, currentDepth: int):
+        """ 
+        Helper function for getAction that initializes agentIndex as 0.
+        """
+        if agentIndex == gameState.getNumAgents(): # one pass completed
+            agentIndex = 0 # reset to pacman (maximizer)
+            currentDepth += 1
+        if currentDepth == self.depth or gameState.isLose() or gameState.isWin(): # base case
+            return (self.evaluationFunction(gameState), None) # return the move here
+        if agentIndex == 0: # if the agentIndex is 0, it's the maximizing pacman
+            return self.maxValue(gameState, agentIndex, currentDepth)
+        else: # otherwise, it's a random expectimax ghost (there could be many)
+            return self.expValue(gameState, agentIndex, currentDepth)
+    
     def getAction(self, gameState: GameState):
         """
         Returns the expectimax action using self.depth and self.evaluationFunction
@@ -283,8 +315,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.getActionWithIndex(gameState, agentIndex=0, currentDepth=0)[1]
+  
 
 def betterEvaluationFunction(currentGameState: GameState):
     """

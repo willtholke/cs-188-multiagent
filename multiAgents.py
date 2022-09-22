@@ -13,6 +13,7 @@
 
 
 
+from tkinter import LEFT
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -159,29 +160,39 @@ class MinimaxAgent(MultiAgentSearchAgent):
     Your minimax agent (question 2)
     """
     
-    def maxValue(self, gameState: GameState):
+    def maxValue(self, gameState: GameState, agentIndex: int, currentDepth: int):
         v = -float('inf')
-        for successor in gameState.generateSuccessor(): # FIXME
-            v = min(v, self.minValue(successor))
-        return v
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            v = max(v, self.getActionWithIndex(successor, agentIndex + 1, currentDepth))
+        return Directions.RIGHT
+        # successors = [gameState.generateSuccessor(agentIndex, action) for action in gameState.getLegalActions(agentIndex)]
+        # return max(self.getActionWithIndex(successors, agentIndex + 1, currentDepth))
         
-    def minValue(self, gameState: GameState, numGhosts: int, agentIndex: int):
+    def minValue(self, gameState: GameState, agentIndex: int, currentDepth: int):
         v = float('inf')
-        # TODO: run through this numGhosts times (all agents make a move after one PacMan move)
-        for successor in gameState.generateSuccessor(MultiAgentSearchAgent.getAction(), agentIndex): #FIXME
-            v = max(v, self.maxValue(successor))
-        return v
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            run = self.getActionWithIndex(successor, agentIndex + 1, currentDepth, action)
+
+            v = min(v, run[0])
+        return run[1]
+        # successors = [gameState.generateSuccessor(agentIndex, action) for action in gameState.getLegalActions(agentIndex - 1)]
+        # return min(self.getActionWithIndex(successors, agentIndex + 1, currentDepth))
     
-    def getActionWithIndex(self, gameState: GameState, agentIndex: int):
+    def getActionWithIndex(self, gameState: GameState, agentIndex: int, currentDepth: int, action: Directions):
         """ 
         Helper function for getAction that initializes agentIndex as 0.
         """
-        if self.depth == 0:
-          print(self.evaluationFunction(gameState))
+        if currentDepth == self.depth or gameState.isLose() or gameState.isWin(): # Maximum depth or game is complete
+            return (self.evaluationFunction(gameState), action)
+        if agentIndex == gameState.getNumAgents(): # one pass completed
+            agentIndex = 0 # reset to pacman (maximizer)
+            currentDepth += 1
         if agentIndex == 0: # if the agentIndex is 0, its the maximizing PacMan
-          return self.maxValue(gameState)
+            return self.maxValue(gameState, agentIndex, currentDepth)
         else: # otherwise, it's a minimizing ghost (there could be many)
-          return self.minValue(gameState, gameState.getNumAgents() - 1)
+            return self.minValue(gameState, agentIndex - 1, currentDepth)
         
     def getAction(self, gameState: GameState):
         """
@@ -206,7 +217,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        return self.getActionWithIndex(gameState, 0)
+        return self.getActionWithIndex(gameState, agentIndex=0, currentDepth=1)
         
   
 
